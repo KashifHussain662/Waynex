@@ -1,10 +1,12 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useQuery } from "@tanstack/react-query";
 import { LinearGradient } from "expo-linear-gradient";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button } from "../../components/Button";
-import { Card } from "../../components/Card";
+import { Card, RecommendationCard } from "../../components/Card";
 import { useWaynexTheme } from "../../hooks/useWaynexTheme";
+import { exploreRepository } from "../../services/repositories";
 import { palette } from "../../theme";
 
 const modules = [
@@ -16,6 +18,7 @@ const modules = [
 
 export function ProductScreen() {
   const { theme } = useWaynexTheme();
+  const { data, isLoading } = useQuery({ queryKey: ["explore"], queryFn: exploreRepository.getExplore });
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: theme.background }]}>
@@ -31,6 +34,31 @@ export function ProductScreen() {
             <Button title="Scan place" icon="camera" variant="ghost" />
           </View>
         </LinearGradient>
+
+        {isLoading || !data ? (
+          <Card style={styles.loading}>
+            <ActivityIndicator color={theme.primary} />
+          </Card>
+        ) : (
+          <>
+            <View style={styles.grid}>
+              {data.collections.map((item) => (
+                <LinearGradient key={item.id} colors={item.gradient} style={styles.collection}>
+                  <Ionicons name={item.icon as keyof typeof Ionicons.glyphMap} size={24} color="#FFFFFF" />
+                  <Text style={styles.collectionTitle}>{item.title}</Text>
+                  <Text style={styles.collectionCopy}>{item.subtitle}</Text>
+                </LinearGradient>
+              ))}
+            </View>
+
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>AI Picks</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalRail}>
+              {data.recommendations.map((recommendation) => (
+                <RecommendationCard key={recommendation.id} recommendation={recommendation} />
+              ))}
+            </ScrollView>
+          </>
+        )}
 
         <View style={styles.grid}>
           {modules.map((item) => (
@@ -82,6 +110,28 @@ const styles = StyleSheet.create({
     padding: 18,
     paddingBottom: 110,
   },
+  collection: {
+    borderRadius: 8,
+    flexBasis: "48%",
+    flexGrow: 1,
+    minHeight: 190,
+    justifyContent: "flex-end",
+    padding: 16,
+  },
+  collectionCopy: {
+    color: "rgba(255,255,255,0.76)",
+    fontSize: 13,
+    fontWeight: "700",
+    lineHeight: 18,
+    marginTop: 8,
+  },
+  collectionTitle: {
+    color: "#FFFFFF",
+    fontSize: 20,
+    fontWeight: "900",
+    lineHeight: 24,
+    marginTop: 18,
+  },
   grid: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -118,6 +168,10 @@ const styles = StyleSheet.create({
     lineHeight: 37,
     marginTop: 8,
   },
+  horizontalRail: {
+    gap: 10,
+    paddingRight: 18,
+  },
   iconWrap: {
     alignItems: "center",
     borderRadius: 8,
@@ -141,8 +195,17 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     marginTop: 14,
   },
+  loading: {
+    alignItems: "center",
+    minHeight: 120,
+    justifyContent: "center",
+  },
   safe: {
     flex: 1,
+  },
+  sectionTitle: {
+    fontSize: 22,
+    fontWeight: "900",
   },
   voiceButton: {
     alignItems: "center",

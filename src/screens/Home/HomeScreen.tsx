@@ -3,10 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 import { LinearGradient } from "expo-linear-gradient";
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Card, PostCard } from "../../components/Card";
+import { Card, LiveMarkerCard, PostCard, RecommendationCard, StoryRail } from "../../components/Card";
 import { Input } from "../../components/Input";
 import { useWaynexTheme } from "../../hooks/useWaynexTheme";
-import { getRouteDashboard } from "../../services/waynexApi";
+import { routeRepository } from "../../services/repositories";
 import { useAppStore } from "../../store/useAppStore";
 import { palette } from "../../theme";
 
@@ -16,7 +16,7 @@ export function HomeScreen() {
   const setDestination = useAppStore((state) => state.setDestination);
   const { data, isLoading } = useQuery({
     queryKey: ["route-dashboard", destination],
-    queryFn: getRouteDashboard,
+    queryFn: () => routeRepository.getDashboard(destination),
   });
 
   return (
@@ -53,7 +53,7 @@ export function HomeScreen() {
             <View style={[styles.routeNode, styles.routeNodeEnd]} />
           </View>
           <Text style={styles.mapTitle}>Islamabad to {destination}</Text>
-          <Text style={styles.mapSub}>Route feed, traffic alerts, fuel, weather and nearby travelers in one place.</Text>
+          <Text style={styles.mapSub}>AI ranks alerts by route, distance ahead, time, weather and trusted community signals.</Text>
         </LinearGradient>
 
         {isLoading || !data ? (
@@ -62,6 +62,8 @@ export function HomeScreen() {
           </Card>
         ) : (
           <>
+            <StoryRail stories={data.stories} />
+
             <View style={styles.insightGrid}>
               {data.insights.map((item) => (
                 <Card key={item.id} style={styles.insightCard}>
@@ -79,8 +81,26 @@ export function HomeScreen() {
             </View>
 
             <View style={styles.sectionTitleRow}>
+              <Text style={[styles.sectionTitle, { color: theme.text }]}>AI Route Intelligence</Text>
+              <Text style={[styles.sectionAction, { color: theme.primary }]}>Auto-ranked</Text>
+            </View>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalRail}>
+              {data.recommendations.map((recommendation) => (
+                <RecommendationCard key={recommendation.id} recommendation={recommendation} />
+              ))}
+            </ScrollView>
+
+            <View style={styles.sectionTitleRow}>
+              <Text style={[styles.sectionTitle, { color: theme.text }]}>Live Map Markers</Text>
+              <Text style={[styles.sectionAction, { color: theme.primary }]}>Bottom sheets</Text>
+            </View>
+            {data.markers.map((marker) => (
+              <LiveMarkerCard key={marker.id} marker={marker} />
+            ))}
+
+            <View style={styles.sectionTitleRow}>
               <Text style={[styles.sectionTitle, { color: theme.text }]}>Route Feed</Text>
-              <Text style={[styles.sectionAction, { color: theme.primary }]}>25 km radius</Text>
+              <Text style={[styles.sectionAction, { color: theme.primary }]}>Relevant only</Text>
             </View>
             {data.feed.map((post) => (
               <PostCard key={post.id} post={post} />
@@ -110,6 +130,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flexDirection: "row",
     justifyContent: "space-between",
+  },
+  horizontalRail: {
+    gap: 10,
+    paddingRight: 18,
   },
   insightCard: {
     flex: 1,

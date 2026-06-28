@@ -1,21 +1,10 @@
-import { conversations, routeFeed, routeInsights } from "../constants/mockData";
-
-const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+import { chatRepository, routeRepository } from "./repositories";
 
 export async function getRouteDashboard() {
-  await pause(280);
-  return {
-    insights: routeInsights,
-    feed: routeFeed,
-    weather: {
-      condition: "Crisp air",
-      temperature: "14 C",
-      wind: "9 km/h",
-    },
-  };
+  return routeRepository.getDashboard("Nathia Gali");
 }
 
 export async function getConversations() {
-  await pause(220);
-  return conversations;
+  const inbox = await chatRepository.getInbox();
+  return inbox.conversations;
 }

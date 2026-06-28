@@ -6,16 +6,19 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { OnboardingScreen } from "../screens/Auth";
+import { AuthScreen, OnboardingScreen } from "../screens/Auth";
 import { ChatScreen, HomeScreen } from "../screens/Home";
 import { ProductScreen } from "../screens/Product";
 import { JournalScreen, ProfileScreen } from "../screens/Profile";
+import { SocialScreen } from "../screens/Social";
 import { useWaynexTheme } from "../hooks/useWaynexTheme";
+import { useAppStore } from "../store/useAppStore";
 
 const ONBOARDING_KEY = "waynex:onboarding-complete";
 
 export type RootTabParamList = {
   Home: undefined;
+  Social: undefined;
   Explore: undefined;
   Chat: undefined;
   Journal: undefined;
@@ -24,6 +27,7 @@ export type RootTabParamList = {
 
 export type RootStackParamList = {
   Onboarding: undefined;
+  Auth: undefined;
   MainTabs: undefined;
 };
 
@@ -32,6 +36,7 @@ const Tab = createBottomTabNavigator<RootTabParamList>();
 
 const icons: Record<keyof RootTabParamList, keyof typeof Ionicons.glyphMap> = {
   Home: "navigate",
+  Social: "planet",
   Explore: "compass",
   Chat: "chatbubbles",
   Journal: "images",
@@ -42,6 +47,7 @@ export function RootNavigator() {
   const { theme } = useWaynexTheme();
   const [isReady, setIsReady] = useState(false);
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
+  const session = useAppStore((state) => state.session);
 
   useEffect(() => {
     async function loadOnboardingState() {
@@ -72,13 +78,14 @@ export function RootNavigator() {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        key={hasCompletedOnboarding ? "main" : "onboarding"}
-        initialRouteName={hasCompletedOnboarding ? "MainTabs" : "Onboarding"}
+        key={!hasCompletedOnboarding ? "onboarding" : session ? "main" : "auth"}
+        initialRouteName={!hasCompletedOnboarding ? "Onboarding" : session ? "MainTabs" : "Auth"}
         screenOptions={{ headerShown: false, contentStyle: { backgroundColor: theme.background } }}
       >
         <Stack.Screen name="Onboarding">
           {() => <OnboardingScreen onComplete={completeOnboarding} />}
         </Stack.Screen>
+        <Stack.Screen name="Auth" component={AuthScreen} />
         <Stack.Screen name="MainTabs" component={MainTabs} />
       </Stack.Navigator>
     </NavigationContainer>
@@ -116,6 +123,7 @@ function MainTabs() {
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="Social" component={SocialScreen} />
       <Tab.Screen name="Explore" component={ProductScreen} />
       <Tab.Screen name="Chat" component={ChatScreen} />
       <Tab.Screen name="Journal" component={JournalScreen} />
