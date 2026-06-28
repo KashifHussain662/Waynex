@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import { useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -15,23 +16,46 @@ import { useWaynexTheme } from "../../hooks/useWaynexTheme";
 import { useAppStore } from "../../store/useAppStore";
 import { AuthProvider } from "../../types";
 
-const authOptions: Array<{
+const authOptions: {
   provider: AuthProvider;
-  label: string;
+  accessibilityLabel: string;
   icon: keyof typeof Ionicons.glyphMap;
-}> = [
-  { provider: "google", label: "Continue with Google", icon: "logo-google" },
-  { provider: "apple", label: "Continue with Apple", icon: "logo-apple" },
-  { provider: "phone", label: "Phone OTP", icon: "call" },
+}[] = [
+  {
+    provider: "google",
+    accessibilityLabel: "Continue with Google",
+    icon: "logo-google",
+  },
+  {
+    provider: "apple",
+    accessibilityLabel: "Continue with Apple",
+    icon: "logo-apple",
+  },
+  { provider: "phone", accessibilityLabel: "Phone OTP", icon: "call" },
+  {
+    provider: "guest",
+    accessibilityLabel: "Explore as guest",
+    icon: "compass",
+  },
 ];
 
 export function AuthScreen() {
   const { theme } = useWaynexTheme();
   const signIn = useAppStore((state) => state.signIn);
   const isAuthLoading = useAppStore((state) => state.isAuthLoading);
+  const authError = useAppStore((state) => state.authError);
+  const [email, setEmail] = useState("kashif.demo@waynex.app");
+  const [password, setPassword] = useState("Waynex@12345");
 
   const handleSignIn = (provider: AuthProvider) => {
-    signIn(provider, provider === "email" ? "traveler@waynex.app" : provider);
+    const normalizedEmail = email.trim() || "traveler@waynex.app";
+    const normalizedPassword = password || "Waynex@12345";
+    signIn(
+      provider,
+      provider === "email"
+        ? `${normalizedEmail}|${normalizedPassword}`
+        : provider,
+    );
   };
 
   return (
@@ -58,8 +82,16 @@ export function AuthScreen() {
             placeholder="Email address"
             keyboardType="email-address"
             autoCapitalize="none"
+            value={email}
+            onChangeText={setEmail}
           />
-          <Input icon="lock-closed" placeholder="Password" secureTextEntry />
+          <Input
+            icon="lock-closed"
+            placeholder="Password"
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+          />
           <Button
             title="Sign in with email"
             icon="log-in"
@@ -71,6 +103,8 @@ export function AuthScreen() {
           {authOptions.map((option) => (
             <Pressable
               key={option.provider}
+              accessibilityRole="button"
+              accessibilityLabel={option.accessibilityLabel}
               onPress={() => handleSignIn(option.provider)}
               style={({ pressed }) => [
                 styles.provider,
@@ -81,25 +115,20 @@ export function AuthScreen() {
                 },
               ]}
             >
-              <Ionicons name={option.icon} size={20} color={theme.text} />
-              <Text style={[styles.providerText, { color: theme.text }]}>
-                {option.label}
-              </Text>
+              <Ionicons name={option.icon} size={22} color={theme.text} />
             </Pressable>
           ))}
         </View>
-
-        <Button
-          title="Explore as guest"
-          icon="compass"
-          variant="ghost"
-          onPress={() => handleSignIn("guest")}
-        />
 
         {isAuthLoading ? (
           <View style={styles.loading}>
             <ActivityIndicator color={theme.primary} />
           </View>
+        ) : null}
+        {authError ? (
+          <Text style={[styles.errorText, { color: theme.accent }]}>
+            {authError}
+          </Text>
         ) : null}
       </ScrollView>
     </SafeAreaView>
@@ -116,6 +145,12 @@ const styles = StyleSheet.create({
     gap: 16,
     padding: 18,
     paddingBottom: 44,
+  },
+  errorText: {
+    fontSize: 13,
+    fontWeight: "800",
+    lineHeight: 18,
+    textAlign: "center",
   },
   copy: {
     color: "rgba(255,255,255,0.76)",
@@ -141,17 +176,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 8,
     borderWidth: 1,
-    flexDirection: "row",
-    gap: 12,
-    minHeight: 52,
-    paddingHorizontal: 16,
+    flex: 1,
+    height: 52,
+    justifyContent: "center",
   },
   providers: {
+    flexDirection: "row",
     gap: 10,
-  },
-  providerText: {
-    fontSize: 15,
-    fontWeight: "800",
   },
   safe: {
     flex: 1,

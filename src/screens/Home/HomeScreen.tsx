@@ -5,6 +5,7 @@ import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-nat
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Card, LiveMarkerCard, PostCard, RecommendationCard, StoryRail } from "../../components/Card";
 import { Input } from "../../components/Input";
+import { useRealtimeQuery } from "../../hooks/useRealtimeQuery";
 import { useWaynexTheme } from "../../hooks/useWaynexTheme";
 import { routeRepository } from "../../services/repositories";
 import { useAppStore } from "../../store/useAppStore";
@@ -18,6 +19,7 @@ export function HomeScreen() {
     queryKey: ["route-dashboard", destination],
     queryFn: () => routeRepository.getDashboard(destination),
   });
+  useRealtimeQuery(["route-dashboard", destination], routeRepository.subscribeDashboard?.bind(routeRepository, destination));
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: theme.background }]}>

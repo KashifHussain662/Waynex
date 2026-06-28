@@ -9,6 +9,13 @@
     "userInterfaceStyle": "automatic",
     "backgroundColor": "#FFFFFF",
     "android": {
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "FOREGROUND_SERVICE",
+        "POST_NOTIFICATIONS"
+      ],
       "adaptiveIcon": {
         "backgroundColor": "#FFFFFF",
         "foregroundImage": "./assets/images/android-icon-foreground.png"
@@ -22,7 +29,17 @@
     },
     "plugins": [
       "expo-secure-store",
-      "expo-sqlite"
+      "expo-sqlite",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Waynex uses your location to share live journeys with people you choose.",
+          "locationWhenInUsePermission": "Waynex uses your location for route intelligence and nearby travel safety.",
+          "isAndroidBackgroundLocationEnabled": true
+        }
+      ],
+      "expo-notifications",
+      "expo-task-manager"
     ]
   }
 }

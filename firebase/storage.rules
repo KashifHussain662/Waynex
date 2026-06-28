@@ -1,0 +1,65 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function underLimit(maxMb) {
+      return request.resource.size < maxMb * 1024 * 1024;
+    }
+
+    function image() {
+      return request.resource.contentType.matches('image/.*');
+    }
+
+    function video() {
+      return request.resource.contentType.matches('video/.*');
+    }
+
+    function audio() {
+      return request.resource.contentType.matches('audio/.*');
+    }
+
+    match /profile-images/{userId}/{fileName} {
+      allow read: if true;
+      allow write: if signedIn() && request.auth.uid == userId && image() && underLimit(8);
+    }
+
+    match /post-images/{userId}/{fileName} {
+      allow read: if true;
+      allow write: if signedIn() && request.auth.uid == userId && image() && underLimit(12);
+    }
+
+    match /stories/{userId}/{fileName} {
+      allow read: if signedIn();
+      allow write: if signedIn() && request.auth.uid == userId && (image() || video()) && underLimit(40);
+    }
+
+    match /trip-images/{userId}/{fileName} {
+      allow read: if signedIn();
+      allow write: if signedIn() && request.auth.uid == userId && image() && underLimit(16);
+    }
+
+    match /chat/{userId}/{fileName} {
+      allow read: if signedIn();
+      allow write: if signedIn() && request.auth.uid == userId && underLimit(50);
+    }
+
+    match /memories/{userId}/{fileName} {
+      allow read: if signedIn();
+      allow write: if signedIn() && request.auth.uid == userId && (image() || video()) && underLimit(80);
+    }
+
+    match /voice/{userId}/{fileName} {
+      allow read: if signedIn();
+      allow write: if signedIn() && request.auth.uid == userId && audio() && underLimit(20);
+    }
+
+    match /videos/{userId}/{fileName} {
+      allow read: if signedIn();
+      allow write: if signedIn() && request.auth.uid == userId && video() && underLimit(120);
+    }
+  }
+}

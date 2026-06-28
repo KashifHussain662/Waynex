@@ -48,11 +48,12 @@ export function RootNavigator() {
   const [isReady, setIsReady] = useState(false);
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
   const session = useAppStore((state) => state.session);
+  const hydrateSession = useAppStore((state) => state.hydrateSession);
 
   useEffect(() => {
     async function loadOnboardingState() {
       try {
-        const value = await AsyncStorage.getItem(ONBOARDING_KEY);
+        const [value] = await Promise.all([AsyncStorage.getItem(ONBOARDING_KEY), hydrateSession()]);
         setHasCompletedOnboarding(value === "true");
       } finally {
         setIsReady(true);
@@ -60,7 +61,7 @@ export function RootNavigator() {
     }
 
     loadOnboardingState();
-  }, []);
+  }, [hydrateSession]);
 
   const completeOnboarding = useCallback(async () => {
     await AsyncStorage.setItem(ONBOARDING_KEY, "true");

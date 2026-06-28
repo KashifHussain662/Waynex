@@ -3,12 +3,14 @@ import { useQuery } from "@tanstack/react-query";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Card } from "../../components/Card";
+import { useRealtimeQuery } from "../../hooks/useRealtimeQuery";
 import { useWaynexTheme } from "../../hooks/useWaynexTheme";
 import { chatRepository } from "../../services/repositories";
 
 export function ChatScreen() {
   const { theme } = useWaynexTheme();
   const { data } = useQuery({ queryKey: ["inbox"], queryFn: chatRepository.getInbox });
+  useRealtimeQuery(["inbox"], chatRepository.subscribeInbox?.bind(chatRepository));
   const conversations = data?.conversations ?? [];
   const tripGroups = data?.tripGroups ?? [];
 

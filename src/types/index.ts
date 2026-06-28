@@ -63,10 +63,13 @@ export type WaynexPost = {
     longitude: number;
   };
   media: readonly [string, string, string];
+  mediaUrls?: string[];
+  authorId?: string;
   likes: number;
   comments: number;
   shares: number;
   saved: boolean;
+  liked?: boolean;
   reposts?: number;
 };
 

@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
+import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useWaynexTheme } from "../../hooks/useWaynexTheme";
 import { WaynexPost } from "../../types";
 import { compactCount } from "../../utils/format";
@@ -8,22 +9,29 @@ import { Card } from "./Card";
 
 type PostCardProps = {
   post: WaynexPost;
+  onLike?: (post: WaynexPost) => void;
+  onComment?: (post: WaynexPost) => void;
+  onShare?: (post: WaynexPost) => void;
+  onSave?: (post: WaynexPost) => void;
+  onReport?: (post: WaynexPost) => void;
 };
 
-export function PostCard({ post }: PostCardProps) {
+export function PostCard({ post, onLike, onComment, onShare, onSave, onReport }: PostCardProps) {
   const { theme } = useWaynexTheme();
+  const firstMedia = post.mediaUrls?.[0];
 
   return (
     <Card style={styles.card}>
       <LinearGradient colors={post.media} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.media}>
+        {firstMedia ? <Image source={{ uri: firstMedia }} style={StyleSheet.absoluteFill} contentFit="cover" transition={180} /> : null}
         <View style={styles.mediaTop}>
           <View style={styles.kindPill}>
             <Ionicons name="navigate" size={14} color="#07100F" />
             <Text style={styles.kindText}>{post.kind}</Text>
           </View>
-          <View style={styles.visibility}>
+          <Pressable onPress={() => onReport?.(post)} style={styles.visibility}>
             <Text style={styles.visibilityText}>{post.visibility}</Text>
-          </View>
+          </Pressable>
         </View>
       </LinearGradient>
       <View style={styles.body}>
@@ -36,24 +44,36 @@ export function PostCard({ post }: PostCardProps) {
           <Text style={[styles.meta, { color: theme.muted }]}>{post.timeAgo}</Text>
         </View>
         <View style={styles.actions}>
-          <Stat icon="heart" value={post.likes} />
-          <Stat icon="chatbubble" value={post.comments} />
-          <Stat icon="paper-plane" value={post.shares} />
-          <Ionicons name={post.saved ? "bookmark" : "bookmark-outline"} size={19} color={theme.primary} />
+          <Stat icon={post.liked ? "heart" : "heart-outline"} value={post.likes} active={post.liked} onPress={() => onLike?.(post)} />
+          <Stat icon="chatbubble-outline" value={post.comments} onPress={() => onComment?.(post)} />
+          <Stat icon="paper-plane-outline" value={post.shares} onPress={() => onShare?.(post)} />
+          <Pressable onPress={() => onSave?.(post)} hitSlop={10}>
+            <Ionicons name={post.saved ? "bookmark" : "bookmark-outline"} size={19} color={theme.primary} />
+          </Pressable>
         </View>
       </View>
     </Card>
   );
 }
 
-function Stat({ icon, value }: { icon: keyof typeof Ionicons.glyphMap; value: number }) {
+function Stat({
+  icon,
+  value,
+  active,
+  onPress,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  value: number;
+  active?: boolean;
+  onPress?: () => void;
+}) {
   const { theme } = useWaynexTheme();
 
   return (
-    <View style={styles.stat}>
-      <Ionicons name={icon} size={17} color={theme.muted} />
-      <Text style={[styles.statText, { color: theme.muted }]}>{compactCount(value)}</Text>
-    </View>
+    <Pressable onPress={onPress} hitSlop={10} style={styles.stat}>
+      <Ionicons name={icon} size={17} color={active ? theme.accent : theme.muted} />
+      <Text style={[styles.statText, { color: active ? theme.accent : theme.muted }]}>{compactCount(value)}</Text>
+    </Pressable>
   );
 }
 
@@ -91,6 +111,7 @@ const styles = StyleSheet.create({
   media: {
     aspectRatio: 1.95,
     justifyContent: "flex-start",
+    overflow: "hidden",
     padding: 12,
   },
   mediaTop: {
