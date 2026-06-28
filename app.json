@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "Waynex",
+    "slug": "waynex",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "waynex",
+    "userInterfaceStyle": "automatic",
+    "backgroundColor": "#FFFFFF",
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#FFFFFF",
+        "foregroundImage": "./assets/images/android-icon-foreground.png"
+      },
+      "package": "com.kashifhussain662.waynex"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "b4a0672e-bbbe-4600-beda-d9456cff788c"
+      }
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-sqlite"
+    ]
+  }
+}
